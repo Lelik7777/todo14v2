@@ -1,7 +1,7 @@
 import {TasksStateType} from '../App';
 import {v1} from 'uuid';
-import {AddTodolistActionType, RemoveTodolistActionType, setLists} from './todolists-reducer';
-import {TaskPriorities, TaskStatuses, TaskType, todolistsAPI} from '../api/todolists-api'
+import {addTodolistAC, AddTodolistActionType, RemoveTodolistActionType, setLists} from './todolists-reducer';
+import {TaskPriorities, TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from '../api/todolists-api'
 import {ThunkDispatch} from 'redux-thunk';
 import {AppRootStateType} from './store';
 
@@ -35,7 +35,7 @@ type ActionsType = RemoveTaskActionType
     | ReturnType<typeof addTaskAC>
     | ChangeTaskStatusActionType
     | ChangeTaskTitleActionType
-    | AddTodolistActionType
+    | ReturnType<typeof addTodolistAC>
     | RemoveTodolistActionType
     | ReturnType<typeof setLists>
     | ReturnType<typeof setTasks>
@@ -97,7 +97,7 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
         case 'ADD-TODOLIST': {
             return {
                 ...state,
-                [action.todolistId]: []
+                [action.idL]: []
             }
         }
         case 'REMOVE-TODOLIST': {
@@ -129,12 +129,14 @@ export const changeTaskTitleAC = (taskId: string, title: string, todolistId: str
     return {type: 'CHANGE-TASK-TITLE', title, todolistId, taskId}
 }
 
+
+//thunks
 export const getTasks = (idL: string) => {
     return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
-        todolistsAPI.getTasks(idL).then(res => dispatch(setTasks(idL, res.data.items)));
+        todolistsAPI.getTasks(idL).then((res) => dispatch(setTasks(idL, res.data.items)));
     }
 }
-//thunks
+
 export const deleteTask = (idL: string, id: string) => {
     return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
         todolistsAPI.deleteTask(idL, id).then(res => dispatch(removeTaskAC(id, idL)))
@@ -148,4 +150,32 @@ export const createTask = (idL: string, title: string) => {
         });
     }
 }
+export const changeNameTask = (idL: string, id: string, title: string) => {
+    return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>, getState: () => AppRootStateType) => {
+        const task = getState().tasks[idL].find(x => x.id === id);
+        if (task) {
+            task.title = title;
+            todolistsAPI.updateTask(idL, id, task).then((res) => {
+                if (res.data.resultCode === 0) {
+                    console.log(res.data)
+                    dispatch(changeTaskTitleAC(id, res.data.data.item.title, idL));
+                }
+            })
+        }
+    }
+};
+
+export const changeStatusTask = (idL: string, id: string, status: TaskStatuses) => {
+    return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>, getState: () => AppRootStateType) => {
+        const task = getState().tasks[idL].find(x => x.id === id);
+        if (task) {
+            task.status = status;
+            todolistsAPI.updateTask(idL, id, task).then((res) => {
+                if (res.data.resultCode === 0) {
+                    dispatch(changeTaskStatusAC(id, res.data.data.item.status, idL))
+                }
+            })
+        }
+    }
+};
 

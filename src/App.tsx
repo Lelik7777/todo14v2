@@ -12,15 +12,23 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import {Menu} from '@mui/icons-material';
 import {
-    addTodolistAC,
+    addList,
+    addTodolistAC, changeTitleList,
     changeTodolistFilterAC,
-    changeTodolistTitleAC,
+    changeTodolistTitleAC, deleteList,
     FilterValuesType,
     getLists,
     removeTodolistAC,
     TodolistDomainType
 } from './state/todolists-reducer'
-import {changeTaskStatusAC, changeTaskTitleAC, createTask, deleteTask} from './state/tasks-reducer';
+import {
+    changeNameTask,
+    changeStatusTask,
+    changeTaskStatusAC,
+    changeTaskTitleAC,
+    createTask,
+    deleteTask
+} from './state/tasks-reducer';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppRootStateType} from './state/store';
 import {TaskStatuses, TaskType} from './api/todolists-api'
@@ -38,12 +46,10 @@ function App() {
     const tasks = useSelector<AppRootStateType, TasksStateType>(state => state.tasks)
     const dispatch = useDispatch();
     useEffect(() => {
-        //debugger
         dispatch(getLists());
     }, []);
 
     const removeTask = useCallback(function (id: string, todolistId: string) {
-        //const action = removeTaskAC(id, todolistId);
         dispatch(deleteTask(todolistId, id));
 
     }, []);
@@ -53,13 +59,11 @@ function App() {
     }, []);
 
     const changeStatus = useCallback(function (id: string, status: TaskStatuses, todolistId: string) {
-        const action = changeTaskStatusAC(id, status, todolistId);
-        dispatch(action);
+        dispatch(changeStatusTask(todolistId, id, status));
     }, []);
 
     const changeTaskTitle = useCallback(function (id: string, newTitle: string, todolistId: string) {
-        const action = changeTaskTitleAC(id, newTitle, todolistId);
-        dispatch(action);
+        dispatch(changeNameTask(todolistId, id, newTitle));
     }, []);
 
     const changeFilter = useCallback(function (value: FilterValuesType, todolistId: string) {
@@ -68,19 +72,18 @@ function App() {
     }, []);
 
     const removeTodolist = useCallback(function (id: string) {
-        const action = removeTodolistAC(id);
-        dispatch(action);
+        dispatch(deleteList(id));
     }, []);
 
     const changeTodolistTitle = useCallback(function (id: string, title: string) {
-        const action = changeTodolistTitleAC(id, title);
-        dispatch(action);
+        dispatch(changeTitleList(id, title));
     }, []);
 
     const addTodolist = useCallback((title: string) => {
-        const action = addTodolistAC(title);
-        dispatch(action);
+        dispatch(addList(title));
     }, [dispatch]);
+
+
     if (todolists.length < 1) return <Preloader2/>
     return (
         <div className="App">
