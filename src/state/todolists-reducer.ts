@@ -86,38 +86,29 @@ export const changeTodolistFilterAC = (id: string, filter: FilterValuesType): Ch
 
 
 //thunks
-export const getLists = () => {
-    return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
-        todolistsAPI.getTodolists().then(res => {
-            console.log(res.data)
-            dispatch(setLists(res.data))
-        });
+export const getLists = () =>
+    async (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
+        /* todolistsAPI.getTodolists().then(res => {
+             console.log(res.data)
+             dispatch(setLists(res.data))
+         });*/
+        const res = await todolistsAPI.getTodolists();
+        dispatch(setLists(res.data));
     }
-};
-export const deleteList = (idL: string) => {
-    return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
-        todolistsAPI.deleteTodolist(idL).then(res => {
-            if (res.data.resultCode === 0) dispatch(removeTodolistAC(idL))
-        });
-    }
-};
-export const addList = (title: string) => {
-    return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
-        todolistsAPI.createTodolist(title).then(res => {
-            if (res.data.resultCode === 0) {
-                dispatch(addTodolistAC(res.data.data.item, res.data.data.item.id));
-            }
-        })
-    }
-}
-export const changeTitleList = (idL: string, title: string) => {
-    return (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
-        todolistsAPI.updateTodolist(idL, title).then(
-            res => {
-                if (res.data.resultCode === 0) {
-                    dispatch(changeTodolistTitleAC(idL, title));
-                }
-            }
-        )
-    }
-}
+;
+export const deleteList = (idL: string) =>
+    async (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
+        const res = await todolistsAPI.deleteTodolist(idL);
+        res.data.resultCode === 0 && dispatch(removeTodolistAC(idL));
+    };
+export const addList = (title: string) =>
+    async (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
+        const res = await todolistsAPI.createTodolist(title);
+        res.data.resultCode === 0 && dispatch(addTodolistAC(res.data.data.item, res.data.data.item.id))
+    };
+
+export const changeTitleList = (idL: string, title: string) =>
+    async (dispatch: ThunkDispatch<AppRootStateType, {}, ActionsType>) => {
+        const res = await todolistsAPI.updateTodolist(idL, title);
+        res.data.resultCode === 0 && dispatch(changeTodolistTitleAC(idL, title));
+    };
