@@ -39,7 +39,7 @@ export type TasksStateType = {
     [key: string]: Array<TaskType>
 }
 
-
+//add some comments
 function App() {
     debugger
     const todolists = useSelector<AppRootStateType, Array<TodolistDomainType>>(state => state.todolists)
